@@ -1,0 +1,76 @@
+1. instruction to run (two ways)
+    A. using shell scripts provided.
+       ## for user input console
+       ## You might have to modify paths in the script to run accordingly
+       $ ./start_query.ksh
+
+       ## run once with provided queries (Fail and success)
+        $ ./start_query/_testcase.ksh
+
+    B. type commands
+       ## for user input console
+       ## Please use full paths for all to run correctly
+       $ python QueryIPInfo.py -g GeoIP.cfg -r RDAP.cfg -i IPList.dat -u UserQuery.cfg
+
+       ## run once with provided queries (Fail and success)
+       ## Please use full paths for all to run correctly
+        $ python QueryIPInfoTestCase.py -g GeoIP.cfg -r RDAP.cfg -i IPList.dat -u UserQuery.cfg
+
+2. query syntax description
+    A. "SELECT" and "FROM" must be presented in query.
+    B. "WHERE" is optional, which is for output to file.
+     C. "SELECT fields"
+        1. case is NOT sensitive.
+        2. each field has to be comma-delimited.
+          ex) select g.country,g.region_name,g.city,ri.name,ri.handle,re.name,re.email
+        3. for all fields -> '*'
+          ex1) select g.*,ri.name,re.email
+          ex2) select *
+        4. g is GeoIP fields         -> please see field= in GeoIP.cfg
+        5. ri is RDAP IP fields      -> please see ipfield= in RDAP.cfg
+         6. re is RDAP Contact fields -> please see entityfield= in RDAP.cfg
+    D. "FROM ips"
+        1. case is NOT sensitive.
+        2. only IPs in given input file will be processed.
+        3. each ips has to be comma-delimited.
+           ex) from 127.0.0.1,1.2.3.4,123,456,789,1
+        4. for all ips -> '*'
+           ex) from *
+    E. "WHERE outputFile"
+        1. case is NOT sensitive but outputFile.
+        2. "WHERE" is optional.
+        3. please use full paths for outputFile, otherwise output to current directory.
+        4. syntax
+           ex1) where test1.out   ## output to current directory
+           ex2) where /fullpaths/test1.out
+    F. each sql must be in ";" delimited.
+       ex) select * ; from * ; where test1.out
+    G. to end query, type "end" in the end.
+       ex1) select * ; from * ; end
+       ex2) <0> => select g.city,ri.* ;  <enter>
+            <1> => from * ;              <enter>
+            <2> => end                 <enter>
+
+
+3. High level description of classes and configuration files.
+    A. main function:
+        1. QueryIPInfo.py         ## for user input console
+        2. QueryIPInfoTestCase.py ## run once for provied queries (fail and sucess)
+    B. UserQuery.py : for user input console class
+    C. UserQueryTestCase.py : run once for test cases
+    D. Parse.py : contains all parsing classes for configuration files, IPs, queries.
+    E. LookUp.py : contains GeoIP and RDAP query classes to get IP information
+    F. GeoIP.cfg : GeoIP configuration file
+    G. RDAP.cfg  : RDAP configuration file
+    H. UserQuery.cfg : User query syntax configuration file
+    I. IPList.dat : I created non-formatted text file which contains IPs.
+
+4. Examples
+    A. Good queries
+        1. select * ; from * ; end
+        2. select g.*,ri.*,re.name,re.handle ; from 1.1.1.1,2.2.2.2 ; end
+        3. select g.*,ri.*,re.* from * ; where test1.out ; end
+    B. Bad queries (will be failed and output syntax error)
+        1. hello * ; from * ; end
+        2. select g.hello,ri.hello ; from 1111111.1111.0.0; end
+        3. select * from $ ; end
